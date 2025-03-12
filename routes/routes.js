@@ -3,7 +3,7 @@ const router = express.Router();
 const authcontroller = require("../controllers/authController");
 
 
-router.get('/send-otp', authcontroller.sendOtp);
+router.post('/send-otp', authcontroller.sendOtp);
 
 
 
