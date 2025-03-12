@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 
 class OtpService {
-    generateOTP() {
+    async generateOTP() {
         const otp = crypto.randomInt(1000, 9999);
         return otp;
     }

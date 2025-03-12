@@ -1,4 +1,5 @@
-const optService = require('../services/otpService')
+const optService = require('../services/otpService');
+const hashService = require('../services/hashService')
 
 
 class AuthController {
@@ -9,8 +10,10 @@ class AuthController {
             return res.status(400).json({ message: "Phone Number is required!" }) // send allow
         }
 
-        const otp = optService.generateOTP();
+        const otp = await optService.generateOTP();
 
+        const hashOtp = hashService.hashOtp(otp);
+        console.log(hashOtp)
 
         res.send({ otp })
     }
