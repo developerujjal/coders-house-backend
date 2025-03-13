@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const twilio = require('twilio');
+const hashService = require('./hashService');
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -25,6 +26,19 @@ class OtpService {
             body: `This is your Coder House code: ${otp}`
         })
 
+    }
+
+
+    async verifyOtp(hashData, data) {
+
+        //Generate Hash
+        const newHashData = hashService.hashOtp(data);
+
+        if (hashData === newHashData) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

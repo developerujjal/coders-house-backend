@@ -1,5 +1,6 @@
 const otpService = require('../services/otpService');
 const hashService = require('../services/hashService');
+const userService = require('../services/userService');
 
 
 class AuthController {
@@ -25,7 +26,7 @@ class AuthController {
 
             //send code by sms
             await otpService.sendBySMS(phone, otp)
-           
+
 
             res.send({
                 data: `${hash}.${expireTime}`,
@@ -35,6 +36,52 @@ class AuthController {
         } catch (error) {
             console.log(error);
             res.status(500).send({ message: 'Faild to send code using SMS' })
+        }
+    }
+
+
+
+    async verifyOtp(req, res) {
+        try {
+            const { data: hash, otp, phone } = req.body;
+
+            if (!hash || !otp || !phone) {
+                return res.status(400).send({ message: "All fields are required!" })
+            }
+
+            const hashResult = hash.split('.');
+            const [hashData, expireTime] = hashResult;
+
+            if (Date.now() > parseFloat(expireTime)) {
+                return res.status(400).send({ message: "OTP Expired!" })
+            }
+
+
+            const data = `${phone}.${otp}.${expireTime}`;
+
+            const isValid = otpService.verifyOtp(hashData, data)
+
+            let user;
+            let accessToken;
+            let refreshToken;
+
+            user = await userService.findUser(phone);
+
+            if (!user) {
+                const data = {
+                    phone: phone,
+                    isActivated: false
+                }
+
+                user = await userService.createUser(data)
+            }
+
+
+
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).send({ message: "Faild to verify otp" })
         }
     }
 }
