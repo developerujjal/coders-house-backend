@@ -8,8 +8,17 @@ const port = process.env.PORT || 5000;
 
 
 
+
 //middleware
-app.use(express.json())
+const options = {
+    origin: ['http://localhost:5173'],
+    // credentials: true,
+    optionalSuccessStatus: 200
+};
+
+app.use(cors(options));
+app.use(express.json());
+
 
 // Connect to MongoDB and start the server
 const startServer = async () => {
