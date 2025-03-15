@@ -1,16 +1,15 @@
-const getUserCollection = require('../models/userCollection');
+const User = require('../models/userModel');
 
 class UserService {
     async findUser(phone) {
-        const userCollection = await getUserCollection(); // Direct call, no need for `.userCollection()`
-        const result = await userCollection.findOne({ phone });
-        return result;
+
+        const user = await User.findOne({ phone })
+        return user;
     }
 
     async createUser(data) {
-        const userCollection = await getUserCollection(); // Direct call, no need for `.userCollection()`
-        const result = await userCollection.insertOne(data);
-        return result;
+        const user = await User.create(data);
+        return user;
     }
 }
 

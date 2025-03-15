@@ -40,7 +40,7 @@ class AuthController {
 
         } catch (error) {
             console.log(error);
-            res.status(500).send({ message: 'Faild to send code using SMS' })
+            res.status(500).json({ message: 'Faild to send code using SMS' })
         }
     }
 
@@ -51,14 +51,14 @@ class AuthController {
             const { hash, otp, phone } = req.body;
 
             if (!hash || !otp || !phone) {
-                return res.status(400).send({ message: "All fields are required!" })
+                return res.status(400).json({ message: "All fields are required!" })
             }
 
             const hashResult = hash.split('.');
             const [hashData, expireTime] = hashResult;
 
             if (Date.now() > parseFloat(expireTime)) {
-                return res.status(400).send({ message: "OTP Expired!" })
+                return res.status(400).json({ message: "OTP Expired!" })
             }
 
 
@@ -66,7 +66,7 @@ class AuthController {
 
             const isValid = otpService.verifyOtp(hashData, data)
             if (!isValid) {
-                return res.status(400).send({ message: "Invalid OTP" })
+                return res.status(400).json({ message: "Invalid OTP" })
             }
 
             let user;
@@ -98,13 +98,13 @@ class AuthController {
             // User projection
             const userInfo = new UserDto(user)
 
-            res.send({ accessToken, user: userInfo })
+            res.json({ accessToken, user: userInfo })
 
 
 
         } catch (error) {
             console.log(error);
-            res.status(500).send({ message: "Faild to verify otp" })
+            res.status(500).json({ message: "Faild to verify otp" })
         }
     }
 }
