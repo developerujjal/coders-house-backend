@@ -2,7 +2,6 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 
 const uri = process.env.MONGODB_URI;
-console.log(uri)
 
 const mongooseOptions = {
     // useNewUrlParser: true,
