@@ -12,12 +12,12 @@ class AuthController {
             const { phone } = req.body;
 
             if (!phone) {
-                return res.status(400).json({ message: "Phone Number is required!" }) // send allow
+                return res.status(400).json({ message: "Phone Number is required!" }); // send allow
             }
 
             //Generate OTP
             const otp = await otpService.generateOTP();
-            console.log(otp)
+            console.log(otp);
 
             const totalTime = 1000 * 60 * 2; // 2 min
             const expireTime = Date.now() + totalTime;
@@ -36,11 +36,11 @@ class AuthController {
                 phone,
                 otp
 
-            })
+            });
 
         } catch (error) {
             console.log(error);
-            res.status(500).json({ message: 'Faild to send code using SMS' })
+            res.status(500).json({ message: 'Faild to send code using SMS' });
         }
     }
 
@@ -51,23 +51,23 @@ class AuthController {
             const { hash, otp, phone } = req.body;
 
             if (!hash || !otp || !phone) {
-                return res.status(400).json({ message: "All fields are required!" })
+                return res.status(400).json({ message: "All fields are required!" });
             }
 
             const hashResult = hash.split('.');
             const [hashData, expireTime] = hashResult;
 
             if (Date.now() > parseFloat(expireTime)) {
-                return res.status(400).json({ message: "OTP Expired!" })
+                return res.status(400).json({ message: "OTP Expired!" });
             }
 
 
             const data = `${phone}.${otp}.${expireTime}`;
 
-            const isValid = otpService.verifyOtp(hashData, data)
+            const isValid = otpService.verifyOtp(hashData, data);
             if (!isValid) {
                 return res.status(400).json({ message: "Invalid OTP" })
-            }
+            };
 
             let user;
 
@@ -80,31 +80,46 @@ class AuthController {
                     createdAt: Date.now()
                 }
 
-                user = await userService.createUser(data)
+                user = await userService.createUser(data);
             }
 
             console.log(user)
 
             const { accessToken, refreshToken } = tokenService.getTokens({ id: user?._id, isActivated: false });
 
+            const tokenData = {
+                token: refreshToken,
+                userId: user?._id
+            }
+
+            await tokenService.storedRefreshToken(tokenData);
+
+
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
                 maxAge: 1000 * 60 * 60 * 24 * 30
-            })
+            });
+
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 1000 * 60 * 60 * 24 * 30
+            });
 
 
             // User projection
-            const userInfo = new UserDto(user)
+            const userInfo = new UserDto(user);
 
-            res.json({ accessToken, user: userInfo })
+            res.json({ user: userInfo, auth: true });
 
 
 
         } catch (error) {
             console.log(error);
-            res.status(500).json({ message: "Faild to verify otp" })
+            res.status(500).json({ message: "Faild to verify otp" });
         }
     }
 }
