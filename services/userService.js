@@ -11,6 +11,17 @@ class UserService {
         const user = await User.create(data);
         return user;
     }
+
+    async updateUser(userId, updateData) {
+
+        const updatedUser = await User.findOneAndUpdate(
+            { _id: userId },
+            { $set: updateData },
+            { new: true }
+        );
+
+        return updatedUser;
+    }
 }
 
 
