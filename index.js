@@ -12,7 +12,7 @@ const port = process.env.PORT || 5000;
 //middleware
 const options = {
     origin: ['http://localhost:5173'],
-    // credentials: true,
+    credentials: true,
     optionalSuccessStatus: 200
 };
 

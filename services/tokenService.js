@@ -5,7 +5,7 @@ const accessSecretToken = process.env.ACCESS_TOKEN_SECRET;
 const refreshSecretToken = process.env.REFRESH_TOKEN_SECRET;
 
 class TokenService {
-    async getTokens(payLoad) {
+    getTokens(payLoad) {
         const accessToken = jwt.sign(payLoad, accessSecretToken, {
             expiresIn: "1h"
         });
