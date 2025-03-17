@@ -3,6 +3,7 @@ const hashService = require('../services/hashService');
 const userService = require('../services/userService');
 const tokenService = require('../services/tokenService');
 const UserDto = require('../dtos/userDto');
+const jwt = require('jsonwebtoken');
 
 
 class AuthController {
@@ -140,9 +141,10 @@ class AuthController {
 
 
         try {
-            const getRefreshToken = await tokenService.findRefreshToken(userData?.id, refreshTokenFromCookies);
+            const token = await tokenService.findRefreshToken(userData?.id, refreshTokenFromCookies);
 
-            if (!getRefreshToken) {
+            console.log("GETTOKEN: ", token)
+            if (!token) {
                 return res.status(401).json({ message: "Invalid Token nai!" })
             }
 
@@ -189,6 +191,42 @@ class AuthController {
 
 
     }
+
+
+    async generateJWT(req, res) {
+        try {
+            const body = req.body;
+            const token = jwt.sign(body, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 1000 * 60 * 60 * 24 * 30
+            });
+            res.json({ message: true })
+        } catch (error) {
+            res.status(500).json({ message: "faild to generate JWT" })
+        }
+    }
+
+    async removedJWT(req, res) {
+        try {
+            res.clearCookie('token', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 0
+            });
+
+            res.json({ success: true });
+
+        } catch (error) {
+            res.status(500).json({ message: "faild to removed JWT" })
+        }
+    }
+
+
+
 }
 
 

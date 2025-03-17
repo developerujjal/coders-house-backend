@@ -18,6 +18,10 @@ class TokenService {
         return { accessToken, refreshToken };
     }
 
+    generateJWT(data){
+        return jwt.sign(data, accessSecretToken)
+    }
+
 
     async storedRefreshToken(data) {
         try {
@@ -37,12 +41,16 @@ class TokenService {
     }
 
     async findRefreshToken(userId, refreshToken) {
-        return await Token.findOne({ userId, token: refreshToken })
+        console.log("ID", userId)
+        console.log("TO: ", userId)
+        const res = await Token.findOne({ userId: userId, token: refreshToken });
+        console.log(res);
+        return res;
     }
 
 
     async updateRefreshToken(userId, refreshToken) {
-        return await Token.updateOne({ userId }, { token: refreshToken })
+        return await Token.updateOne({ userId: userId }, { token: refreshToken })
     }
 
 }
