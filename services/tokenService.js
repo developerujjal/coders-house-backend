@@ -4,6 +4,7 @@ const Token = require('../models/refreshModel');
 const accessSecretToken = process.env.ACCESS_TOKEN_SECRET;
 const refreshSecretToken = process.env.REFRESH_TOKEN_SECRET;
 
+
 class TokenService {
     getTokens(payLoad) {
         const accessToken = jwt.sign(payLoad, accessSecretToken, {
@@ -17,6 +18,7 @@ class TokenService {
         return { accessToken, refreshToken };
     }
 
+
     async storedRefreshToken(data) {
         try {
 
@@ -26,6 +28,21 @@ class TokenService {
         } catch (error) {
             console.log("Store Refresh Token Error", error)
         }
+    }
+
+
+    async verifyRefreshToken(refreshToken) {
+        return jwt.verify(refreshToken, refreshSecretToken)
+
+    }
+
+    async findRefreshToken(userId, refreshToken) {
+        return await Token.findOne({ userId, token: refreshToken })
+    }
+
+
+    async updateRefreshToken(userId, refreshToken) {
+        return await Token.updateOne({ userId }, { token: refreshToken })
     }
 
 }

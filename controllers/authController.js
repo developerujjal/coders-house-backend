@@ -71,7 +71,7 @@ class AuthController {
 
             let user;
 
-            user = await userService.findUser(phone);
+            user = await userService.findUser({ phone });
 
             if (!user) {
                 const data = {
@@ -121,6 +121,73 @@ class AuthController {
             console.log(error);
             res.status(500).json({ message: "Faild to verify otp" });
         }
+    }
+
+
+    async refresh(req, res) {
+        let userData;
+        const { refreshToken: refreshTokenFromCookies } = req.cookies;
+
+        try {
+
+            userData = await tokenService.verifyRefreshToken(refreshTokenFromCookies);
+
+        } catch (error) {
+            return res.status(401).json({ message: "Invalid Token ki re!" })
+        }
+
+
+
+
+        try {
+            const getRefreshToken = await tokenService.findRefreshToken(userData?.id, refreshTokenFromCookies);
+
+            if (!getRefreshToken) {
+                return res.status(401).json({ message: "Invalid Token nai!" })
+            }
+
+        } catch (error) {
+            return res.status(500).json({ message: "Internal Error" })
+        }
+
+
+        const user = await userService.findUser({ _id: userData?.id })
+
+        if (!user) {
+            return res.status(404).json({ message: "No User" })
+        }
+
+        const { accessToken, refreshToken } = tokenService.getTokens({ _id: userData?.id })
+
+
+        try {
+            await tokenService.updateRefreshToken(userData?.id, refreshToken)
+        } catch (error) {
+            return res.status(500).json({ message: "Internal Error" })
+        }
+
+
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 1000 * 60 * 60 * 24 * 30
+        });
+
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 1000 * 60 * 60 * 24 * 30
+        });
+
+
+        const userInfo = new UserDto(user);
+        res.json({ user: userInfo, auth: true });
+
+
+
     }
 }
 

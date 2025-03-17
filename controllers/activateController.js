@@ -14,7 +14,7 @@ class ActivateController {
             }
 
             // Remove base64 prefix and create the buffer
-            const buffer = Buffer.from(avater.replace(/^data:image\/png;base64,/, ''), 'base64');
+            const buffer = Buffer.from(avater.replace(/^data:image\/(png|jpg);base64,/, ''), 'base64');
 
             // Generate a random image name
             const imagePath = `${Date.now()}-${Math.round(Math.random() * 1e9)}.png`;
