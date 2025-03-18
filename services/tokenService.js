@@ -18,7 +18,7 @@ class TokenService {
         return { accessToken, refreshToken };
     }
 
-    generateJWT(data){
+    generateJWT(data) {
         return jwt.sign(data, accessSecretToken)
     }
 
@@ -51,6 +51,10 @@ class TokenService {
 
     async updateRefreshToken(userId, refreshToken) {
         return await Token.updateOne({ userId: userId }, { token: refreshToken })
+    }
+
+    async removeRefreshToken(token) {
+        return await Token.deleteOne({ token })
     }
 
 }

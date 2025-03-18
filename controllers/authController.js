@@ -193,10 +193,39 @@ class AuthController {
     }
 
 
+
+    async logOut(req, res) {
+        try {
+            const { refreshToken } = req.cookies;
+            await tokenService.removeRefreshToken(refreshToken);
+
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 0
+            });
+
+            res.clearCookie('accessToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 0
+            })
+
+            res.json({user: null, auth: false})
+
+        } catch (error) {
+            res.status(500).json({ message: "Faild to logout" })
+        }
+    }
+
+
+
     async generateJWT(req, res) {
         try {
             const body = req.body;
-            const token = jwt.sign(body, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1h'});
+            const token = jwt.sign(body, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',

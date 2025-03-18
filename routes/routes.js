@@ -9,7 +9,8 @@ router.post('/verify-otp', authcontroller.verifyOtp);
 router.post('/activate', authMiddleware, activateController.activate);
 router.get('/refresh', authcontroller.refresh);
 router.post('/jwt-token', authcontroller.generateJWT);
-router.post('/removed-jwt', authcontroller.removedJWT)
+router.post('/removed-jwt', authcontroller.removedJWT);
+router.post('/signout', authMiddleware, authcontroller.logOut);
 
 
 module.exports = router;
