@@ -4,6 +4,7 @@ const userService = require('../services/userService');
 const tokenService = require('../services/tokenService');
 const UserDto = require('../dtos/userDto');
 const jwt = require('jsonwebtoken');
+const Users = require('../models/newUserModal')
 
 
 class AuthController {
@@ -213,7 +214,7 @@ class AuthController {
                 maxAge: 0
             })
 
-            res.json({user: null, auth: false})
+            res.json({ user: null, auth: false })
 
         } catch (error) {
             res.status(500).json({ message: "Faild to logout" })
@@ -225,6 +226,15 @@ class AuthController {
     async generateJWT(req, res) {
         try {
             const body = req.body;
+
+            const isUser = await Users.findOne({ email: body?.email });
+          
+            //Insert User data
+            if (!isUser) {
+                await Users.create(body)
+            }
+
+            //Create JWT and Set in Cookies
             const token = jwt.sign(body, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
             res.cookie('token', token, {
                 httpOnly: true,

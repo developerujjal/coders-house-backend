@@ -7,6 +7,7 @@ class UserService {
         return user;
     }
 
+
     async createUser(data) {
         const user = await User.create(data);
         return user;
