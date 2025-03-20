@@ -6,15 +6,15 @@ const jwt = require('jsonwebtoken');
 const authMiddleware = async (req, res, next) => {
     try {
 
-        const { refreshToken, accessToken } = req.cookies;
+        const { token } = req.cookies;
 
-        if (!accessToken) {
+        if (!token) {
             return res.status(401).json({ message: "Unauthorized Access" })
         };
 
 
 
-        jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
             if (error) {
                 return res.status(401).json({ message: "Unauthorized Access" });
             };
