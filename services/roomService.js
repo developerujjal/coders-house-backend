@@ -1,4 +1,3 @@
-const RoomDto = require('../dtos/roomDto');
 const Rooms = require('../models/roomModal');
 
 
@@ -14,10 +13,16 @@ class RoomService {
 
         })
 
-        return res.json(new RoomDto(room));;
+        return room;
     }
 
-    
+
+    async getAllRooms(types) {
+        const rooms = await Rooms.find({ roomType: { $in: types } });
+        return rooms;
+    }
+
+
 }
 
 module.exports = new RoomService();

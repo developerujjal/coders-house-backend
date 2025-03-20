@@ -1,4 +1,5 @@
 class RoomDto {
+    _id;
     roomTopic;
     roomType;
     ownerId;
@@ -6,7 +7,8 @@ class RoomDto {
     createdAt;
 
     constructor(room) {
-        this.roomTopic = room.roomTopic,
+        this._id = room._id,
+            this.roomTopic = room.roomTopic,
             this.roomTopic = room.roomType,
             this.ownerId = room.ownerId,
             this.speakers = room.speakers,

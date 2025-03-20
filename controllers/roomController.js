@@ -1,5 +1,6 @@
 const roomService = require("../services/roomService");
 const User = require("../models/newUserModal");
+const RoomDto = require("../dtos/roomDto");
 
 
 class RoomController {
@@ -23,10 +24,19 @@ class RoomController {
                 ownerId: user?._id
             })
 
+            return res.json(new RoomDto(room));
 
         } catch (error) {
             res.status(500).json({ message: "Faild to create a room" })
         }
+    }
+
+
+    async index(req, res) {
+        const rooms = await roomService.getAllRooms(['open']);
+        const allRooms = rooms.map(room => new RoomDto(room));
+
+        return res.json(allRooms) // return optional
     }
 
 }
