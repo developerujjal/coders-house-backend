@@ -20,8 +20,7 @@ class RoomController {
             const room = await roomService.create({
                 roomTopic,
                 roomType,
-                ownerId: user?._id.toString(),
-                ownerIdTwo: user?._id
+                ownerId: user?._id
             })
 
 
