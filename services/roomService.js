@@ -1,28 +1,31 @@
-const Rooms = require('../models/roomModal');
-
+const Rooms = require("../models/roomModal");
 
 class RoomService {
-    async create(payLoad) {
-        const { roomTopic, roomType, ownerId } = payLoad;
+  async create(payLoad) {
+    const { roomTopic, roomType, ownerId } = payLoad;
 
-        const room = await Rooms.create({
-            roomTopic,
-            roomType,
-            ownerId,
-            speakers: [ownerId]
+    const room = await Rooms.create({
+      roomTopic,
+      roomType,
+      ownerId,
+      speakers: [ownerId],
+    });
 
-        })
+    return room;
+  }
 
-        return room;
+  async getAllRooms(types) {
+    try {
+      const rooms = await Rooms.find({ roomType: { $in: types } })
+        .populate("speakers")
+        .populate('ownerId')
+        .exec();
+      return rooms;
+
+    } catch (error) {
+      console.log(error);
     }
-
-
-    async getAllRooms(types) {
-        const rooms = await Rooms.find({ roomType: { $in: types } });
-        return rooms;
-    }
-
-
+  }
 }
 
 module.exports = new RoomService();
