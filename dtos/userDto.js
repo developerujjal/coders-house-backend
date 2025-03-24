@@ -1,16 +1,14 @@
 class UserDto {
-    _id;
+    id;
     name;
-    avater;
-    phone;
-    isActivated;
+    email;
+    image;
 
     constructor(user) {
-        this._id = user?._id,
+        this.id = user?._id,
             this.name = user?.name,
-            this.avater = user?.avater ? `${process.env.BASE_URL}${user?.avater}` : null,
-            this.phone = user?.phone,
-            this.isActivated = user?.isActivated
+            this.email = user?.email,
+            this.image = user?.image
     }
 }
 

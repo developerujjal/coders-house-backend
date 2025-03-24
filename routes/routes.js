@@ -14,6 +14,7 @@ router.post('/removed-jwt', authcontroller.removedJWT);
 router.post('/signout', authMiddleware, authcontroller.logOut);
 router.post('/room', authMiddleware, roomController.createRoom);
 router.get('/rooms', authMiddleware, roomController.index)
+router.get('/user/:email', authMiddleware, authcontroller.getOneUser);
 
 
 module.exports = router;

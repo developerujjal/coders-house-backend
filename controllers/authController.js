@@ -228,7 +228,7 @@ class AuthController {
             const body = req.body;
 
             const isUser = await Users.findOne({ email: body?.email });
-          
+
             //Insert User data
             if (!isUser) {
                 await Users.create(body)
@@ -261,6 +261,25 @@ class AuthController {
 
         } catch (error) {
             res.status(500).json({ message: "faild to removed JWT" })
+        }
+    }
+
+
+    async getOneUser(req, res) {
+        try {
+
+            const email =  req.params?.email;
+
+            if(!email){
+                return res.status(400).json({message: 'not found'})
+            }
+
+            const result = await Users.findOne({ email: email })
+            const user = new UserDto(result)
+            res.json(user);
+
+        } catch (error) {
+            res.status(500).json({ message: "faild to fetch user" })
         }
     }
 

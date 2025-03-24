@@ -12,26 +12,32 @@ const ACTIONS = require("./actions");
 const server = createServer(app);
 const port = process.env.PORT || 5000;
 
+// Configure CORS for localhost & production
+const allowedOrigins = [
+  "http://localhost:5173",
+  // "https://your-live-domain.com", // Add your production frontend URL
+];
+
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
-//middleware
-const options = {
-  origin: ["http://localhost:5173"],
-  credentials: true,
-  optionalSuccessStatus: 200,
-};
-
-app.use(cors(options));
-// app.use(express.json());
-app.use(express.json({ limit: "8mb" })); /// For send large file into database
+// Middleware
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true,
+  })
+);
+app.use(express.json({ limit: "8mb" })); // For sending large files into the database
 app.use(cookieParser());
-app.use("/storage", express.static("storage")); // For get the image from storage folder;
+app.use("/storage", express.static("storage")); // Serve images from the "storage" folder
 
+// Connect to Database
 ConnectDB();
 
 // Routes
@@ -42,72 +48,105 @@ app.get("/", (req, res) => {
   res.send("Coder House");
 });
 
-//SOCKET IO LOGIC
-
+// SOCKET.IO LOGIC
 const socketUserMapping = {};
 
 io.on("connection", (socket) => {
-  console.log("new Connection", socket.id);
+  console.log("New Connection:", socket.id);
 
-  // from client send a object
+  // Handle user joining a room
   socket.on(ACTIONS.JOIN, ({ roomId, user }) => {
-    // ACTIONS.JOIN = 'join'
     socketUserMapping[socket.id] = user;
 
-    //new Map
-    const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+    // Ensure roomId exists before accessing it
+    const clients = io.sockets.adapter.rooms.get(roomId)
+      ? Array.from(io.sockets.adapter.rooms.get(roomId))
+      : [];
 
-    // 
     clients.forEach((clientId) => {
       io.to(clientId).emit(ACTIONS.ADD_PEER, {
         peerId: socket.id,
         createOffer: false,
-        user
+        user,
+      });
+
+      socket.emit(ACTIONS.ADD_PEER, {
+        peerId: clientId,
+        createOffer: true,
+        user: socketUserMapping[clientId] || {}, // Safe access
       });
     });
 
-    socket.emit(ACTIONS.ADD_PEER, {
-      peerId: clientId,
-      createOffer: true,
-      user: socketUserMapping[clientId]
-    });
-
     socket.join(roomId);
-
-    console.log(clients);
+    console.log(`User ${user?.id} joined room: ${roomId}`);
   });
 
-
-  //handle relay ice
+  // Handle relay ICE candidates
   socket.on(ACTIONS.RELAY_ICE, ({ peerId, icecandidate }) => {
     io.to(peerId).emit(ACTIONS.ICE_CANDIDATE, {
       peerId: socket.id,
-      icecandidate
-    })
-  })
+      icecandidate,
+    });
+  });
 
-
-  //handle relay sdp(session description)
+  // Handle relay SDP (session description)
   socket.on(ACTIONS.RELAY_SDP, ({ peerId, sessionDescription }) => {
     io.to(peerId).emit(ACTIONS.SESSION_DESCRIPTION, {
       peerId: socket.id,
-      sessionDescription
-    })
-  })
+      sessionDescription,
+    });
+  });
+
+  // Handle user leaving a room
+  const leaveRoom = ({ roomId }) => {
+    const clients = io.sockets.adapter.rooms.get(roomId)
+      ? Array.from(io.sockets.adapter.rooms.get(roomId))
+      : [];
+
+    clients.forEach((clientId) => {
+      // Notify other clients in the room that this user is leaving
+      io.to(clientId).emit(ACTIONS.REMOVE_PEER, {
+        peerId: socket.id,
+        userId: socketUserMapping[socket.id]?.id, // Safe access
+      });
+
+      // Notify the user leaving that they should remove other peers
+      socket.emit(ACTIONS.REMOVE_PEER, {
+        peerId: clientId,
+        userId: socketUserMapping[clientId]?.id, // Safe access
+      });
+    });
+
+    // Leave the room and clean up the user mapping
+    socket.leave(roomId);
+    delete socketUserMapping[socket.id];
+    console.log(`User ${socket.id} left room: ${roomId}`);
+  };
+
+  // Event listener for user leaving a room explicitly
+  socket.on(ACTIONS.LEAVE, leaveRoom);
 
 
-  
+  // Event listener for user disconnection (this can be for automatic cleanup on disconnect)
+  socket.on("disconnect", () => {
+    console.log(`User disconnected: ${socket.id}`);
 
+    // Call the leaveRoom function when the user disconnects (assuming they were in a room)
+    Object.keys(socket.rooms).forEach((roomId) => {
+      leaveRoom({ roomId });
+    });
+
+    
+    // Clean up the user mapping when the socket disconnects
+    delete socketUserMapping[socket.id];
+  });
 
 });
-
-
 
 // Start the server
 server.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
 });
-
 
 
 
