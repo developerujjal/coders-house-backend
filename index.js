@@ -128,18 +128,7 @@ io.on("connection", (socket) => {
 
 
   // Event listener for user disconnection (this can be for automatic cleanup on disconnect)
-  socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
-
-    // Call the leaveRoom function when the user disconnects (assuming they were in a room)
-    Object.keys(socket.rooms).forEach((roomId) => {
-      leaveRoom({ roomId });
-    });
-
-    
-    // Clean up the user mapping when the socket disconnects
-    delete socketUserMapping[socket.id];
-  });
+  socket.on("disconnect", leaveRoom);
 
 });
 
@@ -149,6 +138,16 @@ server.listen(port, () => {
 });
 
 
+
+
+
+/* 
+
+in the disconnect we need to handle few different validation.
+ like if the user leave from the close the tab or direct close the browser, 
+ or join multiple room at the same time, need to close/disconnect him from previous room 
+
+*/
 
 
 

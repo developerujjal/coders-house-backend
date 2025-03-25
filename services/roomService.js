@@ -12,7 +12,7 @@ class RoomService {
     });
 
     return room;
-  }
+  };
 
   async getAllRooms(types) {
     try {
@@ -25,6 +25,12 @@ class RoomService {
     } catch (error) {
       console.log(error);
     }
+  };
+
+
+  async getRoom(roomId){
+    const roomResult = await Rooms.findOne({_id: roomId});
+    return roomResult;
   }
 }
 

@@ -24,14 +24,28 @@ class RoomController {
     } catch (error) {
       res.status(500).json({ message: "Faild to create a room" });
     }
-  }
+  };
 
   async index(req, res) {
     const rooms = await roomService.getAllRooms(["open"]);
     const allRooms = rooms.map((room) => new RoomDto(room));
 
     return res.json(allRooms); // return optional
-  }
+  };
+
+  async getSingelRoom(req, res) {
+    try {
+
+      const roomId = req.params?.roomId;
+      const room = await roomService.getRoom(roomId);
+      return res.json(room);
+
+    } catch (error) {
+      res.status(500).json({ message: "Faild to fetch room" })
+    }
+  };
+
+
 }
 
 module.exports = new RoomController();
