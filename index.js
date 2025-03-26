@@ -89,6 +89,7 @@ io.on("connection", (socket) => {
     });
   });
 
+
   // Handle relay SDP (session description)
   socket.on(ACTIONS.RELAY_SDP, ({ peerId, sessionDescription }) => {
     io.to(peerId).emit(ACTIONS.SESSION_DESCRIPTION, {
@@ -96,6 +97,35 @@ io.on("connection", (socket) => {
       sessionDescription,
     });
   });
+
+
+
+  // Handle MUTE
+  socket.on(ACTIONS.MUTE, ({ roomId, userId }) => {
+    console.log("MUTE: ", userId)
+    const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+    clients.forEach(clientId => {
+      io.to(clientId).emit(ACTIONS.MUTE, {
+        peerId: socket.id, // Include if needed for track handling
+        userId
+      });
+    });
+  });
+
+  // Handle UN_MUTE (same structure)
+  socket.on(ACTIONS.UN_MUTE, ({ roomId, userId }) => {
+    console.log("UNMUTE: ", userId)
+
+    const clients = Array.from(io.sockets.adapter.rooms.get(roomId) || []);
+    clients.forEach(clientId => {
+      io.to(clientId).emit(ACTIONS.UN_MUTE, {
+        peerId: socket.id,
+        userId
+      });
+    });
+  });
+
+
 
   // Handle user leaving a room
   const leaveRoom = ({ roomId }) => {
